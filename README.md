@@ -15,6 +15,8 @@ Here is a screenshot of simple file contents. Click on the image to view it full
   <li>Translation of HTML characters, to display strings exactly as they are in the file</li>
   <li>Traverse directories by simply clicking on the magnifying glass icons</li>
   <li>Show file contents by simply clicking on the cat icons</li>
+  <li>HTTP POST method for passing commands to slightly obfuscate the attackers commands from logs</li>
+  <li>Commands can be typed into the shell at the bottom of the application / listed above output in highlight</li>
 </ul>
 
 # TODO
