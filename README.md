@@ -24,6 +24,8 @@ Here is a screenshot of simple file contents. Click on the image to view it full
   <li>Add more methods of execution (PHP, exec, system, passthru, etc)</li>
   <li>Add more viewing functionality</li>
   <li>Add local SQL (HTML5) functionality</li>
+  <li>Upload functionality using PHP</li>
+  <li>Built-Ins (Reconnaisance)</li>
 </ul>
 
 # Usage
