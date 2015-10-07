@@ -11,7 +11,7 @@ Here is a screenshot of simple file contents. Click on the image to view it full
 # Features
 
 <ul>
-  <li>Detailed Server information with each request in the top left-hand div</li>
+  <li>Detailed Server information with each request in the top right-hand div</li>
   <li>Translation of HTML characters, to display strings exactly as they are in the file</li>
   <li>Traverse directories by simply clicking on the magnifying glass icons</li>
   <li>Show file contents by simply clicking on the cat icons</li>
