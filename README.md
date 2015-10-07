@@ -8,6 +8,21 @@ Here is a screenshot hovering over the little cat icon to "cat" the file content
 Here is a screenshot of simple file contents.
 <img src="https://weaknetlabs.com/images/wpes_2.PNG"/><br /><br />
 
-# Functions
+# Features
+
+<ul>
+  <li>Detailed Server information with each request in the top left-hand div</li>
+  <li>Translation of HTML characters, to display strings exactly as they are in the file</li>
+  <li>Traverse directories by simply clicking on the magnifying glass icons</li>
+  <li>Show file contents by simply clicking on the cat icons</li>
+</ul>
+
+# TODO
+<ul>
+  <li>Add more methods of execution (PHP, exec, system, passthru, etc)</li>
+  <li>Add more viewing functionality</li>
+  <li>Add local SQL (HTML5) functionality</li>
+</ul>
 
 # Usage
+Once a web service has been exploited simply upload the shell, by means of internal (wget/fetch), SQL Injection, etc and then simply access it from the browser. Your shell will have whatever rights that the web service deamon is running as.
