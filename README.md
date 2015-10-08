@@ -8,10 +8,11 @@ Here is a screenshot of simple file contents. Click on the image to view it full
 And here is what the file looks like when the user clicks "Download File". Click on the image to view it full sized.<br />
 <img src="http://weaknetlabs.com/images/wpes_9_new.PNG"/> <br /><br />
 A screenshot showing how to access the ARIN query that is generated using PHP. Click on the image to view it full sized.<br />
-<img src="http://weaknetlabs.com/images/wpes_7_new.png"/> <br /><br />
+<img src="http://weaknetlabs.com/images/wpes_7.png"/> <br /><br />
 A screenshot showing how to access the Exploit-DB query that is generated using PHP. Click on the image to view it full sized.<br />
-<img src="http://weaknetlabs.com/images/wpes_6_new.png"/> <br /><br />
-
+<img src="http://weaknetlabs.com/images/wpes_6.png"/> <br /><br />
+A screenshot showing off the PHP generaqted link for the Google "site:<target>" search. Click on the image to view it full sized.<br />
+<img src="http://weaknetlabs.com/images/wpes_7_b.png"/> <br /><br />
 
 # Features
 
