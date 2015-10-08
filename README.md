@@ -26,6 +26,7 @@ And here is what the file looks like when the user clicks "Download File"<br />
 
 # TODO
 <ul>
+  <li>Mobile responsive CSS design</li>
   <li><strike>Add more methods of execution (PHP, exec, system, passthru, etc)</strike></li>
   <li><strike>Add more viewing functionality</strike></li>
   <li>Add local SQL (HTML5) functionality</li>
