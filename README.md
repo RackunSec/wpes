@@ -11,7 +11,7 @@ A screenshot showing how to access the ARIN query that is generated using PHP. C
 <img src="http://weaknetlabs.com/images/wpes_7_noo.png"/> <br /><br />
 A screenshot showing how to access the Exploit-DB query that is generated using PHP. Click on the image to view it full sized.<br />
 <img src="http://weaknetlabs.com/images/wpes_6.png"/> <br /><br />
-A screenshot showing off the PHP generaqted link for the Google "site:<target>" search. Click on the image to view it full sized.<br />
+A screenshot showing off the PHP generaqted link for the Google "site:&lt;target>" search. Click on the image to view it full sized.<br />
 <img src="http://weaknetlabs.com/images/wpes_7_b.png"/> <br /><br />
 
 # Features
@@ -28,6 +28,7 @@ A screenshot showing off the PHP generaqted link for the Google "site:<target>" 
   <li>(OSINT) ARIN WHOIS lookup</li>
   <li>Exploit-DB exploit Search</li>
   <li>Email for server administrator</li>
+  <li>Google "site:&lt;target>" link generated with PHP</li>
 </ul>
 
 # TODO
