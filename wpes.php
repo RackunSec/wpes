@@ -190,11 +190,9 @@
 	}
 ?>
 <script>
-	// make the file:
-	//var file = new Blob(["<?php if($output != ""){echo $output;} ?>"], {type: "text/plain;charset=utf-8"});
+	// this is seemingly randomly placement, but I am using PHP to write the file contents that I need to retrieve first
 	function saveFile(){
-		//saveAs(blob, "<?php echo $file.'txt'; ?>");
-		window.open('data:text/plain;charset=utf-8,' + escape("<?php echo $raw; ?>"));
+		window.open('data:text/plain;charset=utf-8,' + escape('<?php $contents = preg_replace("/(\(|\)|\$|')/","$1",$raw); echo $contents; ?>'));
 	}
 </script>
 <!-- Download the file -->
