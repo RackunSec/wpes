@@ -124,7 +124,7 @@
 	// for dynamically generating navigation from output
 	function submitFile(path,file,action){
 		if(action == "cat"){
-			document.getElementById("inputCmd").value='cat ' + path + file; // TODO change to while read foo do echo foo
+			document.getElementById("inputCmd").value='while read foo; do echo $foo; done <  ' + path + file; // TODO change to while read foo do echo foo
 		}else if(action == "ls"){
 			document.getElementById("inputCmd").value='ls -l ' + path + file; // TODO change to while read foo do echo foo
 		}
