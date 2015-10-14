@@ -185,9 +185,9 @@
 					$path = ""; # nothing
 				}
 				if(!preg_match("/^d/","$output")){
-					echo "<span style=\"color:yellow\" title=\"Click here view file contents\" class=\"unicode\" onClick=\"submitFile('$path','$file','cat');\">&#128049;</span>&nbsp;".$output."<br />";
+					echo "<span style=\"color:yellow\" title=\"Click here view file contents\" class=\"unicode\" onClick=\"submitFile('$path','$file','cat');\">&#128269;</span>&nbsp;".$output."<br />";
 				}else{
-	    				echo "<span style=\"color:#00ce05\" title=\"Click here to view directory contents\" class=\"unicode\" onClick=\"submitFile('$path','$file','ls');\">&#128269;</span>&nbsp;".$output."<br />";
+	    				echo "<span style=\"color:#00ce05\" title=\"Click here to view directory contents\" class=\"unicode\" onClick=\"submitFile('$path','$file','ls');\">&#128194;</span>&nbsp;".$output."<br />";
 				}
 			}else{
 				# I could probably use something like <pre> tags here, but I'd rather do it this way just in case:
